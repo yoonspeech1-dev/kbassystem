@@ -172,10 +172,30 @@ function showStudentPage(studentId) {
         document.getElementById('student-name-title').textContent = student.name;
         document.getElementById('student-meta').textContent = `${student.year}학년 | ${student.dept}`;
         renderRecords();
+        updateNoteDateOptions();
         showPage('student-page');
 
         // 오늘 날짜를 기본값으로 설정
-        document.getElementById('record-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('breath-date').value = new Date().toISOString().split('T')[0];
+    }
+}
+
+// 배움 한 줄 날짜 선택 옵션 업데이트
+function updateNoteDateOptions() {
+    const student = findStudent(currentClass, currentStudent);
+    const select = document.getElementById('note-date');
+
+    select.innerHTML = '<option value="">기록된 날짜 선택</option>';
+
+    if (student && student.records.length > 0) {
+        // 최신 날짜순으로 정렬
+        const sortedRecords = [...student.records].reverse();
+        sortedRecords.forEach((record, idx) => {
+            const originalIdx = student.records.length - 1 - idx;
+            const hasNote = record.note && record.note.trim();
+            const noteStatus = hasNote ? ' ✓' : ' (미입력)';
+            select.innerHTML += `<option value="${originalIdx}">${formatDate(record.date)}${noteStatus}</option>`;
+        });
     }
 }
 
@@ -235,9 +255,9 @@ function renderRecords() {
 
     if (student.records.length === 0) {
         tbody.innerHTML = `
-            <tr style="background: none; border: none; padding: 32px 16px;">
-                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 32px 16px; display: block;">
-                    아직 기록이 없습니다.<br>위의 폼에서 첫 번째 기록을 추가해주세요.
+            <tr>
+                <td colspan="6" class="records-empty">
+                    아직 기록이 없습니다.<br>호흡 시간을 기록해주세요.
                 </td>
             </tr>
         `;
@@ -254,16 +274,19 @@ function renderRecords() {
             changeHtml = `<span class="change ${change.class}">${change.value}</span>`;
         }
 
+        const noteClass = record.note ? 'note' : 'note empty';
+        const noteText = record.note || '미입력';
+
         return `
             <tr>
-                <td class="session-num" data-label="회차">${index + 1}회차</td>
-                <td data-label="날짜">${formatDate(record.date)}</td>
-                <td class="breath-time" data-label="호흡 시간">${secondsToBreathTime(record.breathSeconds)}</td>
-                <td data-label="변화">${changeHtml}</td>
-                <td class="note" data-label="배움 한 줄">${record.note || '-'}</td>
+                <td class="session-num">${index + 1}</td>
+                <td class="date-cell">${formatDate(record.date)}</td>
+                <td class="breath-time">${secondsToBreathTime(record.breathSeconds)}</td>
+                <td>${changeHtml}</td>
+                <td class="${noteClass}" title="${record.note || ''}">${noteText}</td>
                 <td class="actions">
-                    <button class="action-btn edit" data-index="${index}">수정</button>
-                    <button class="action-btn delete" data-index="${index}">삭제</button>
+                    <button class="action-btn edit" data-index="${index}">✏️</button>
+                    <button class="action-btn delete" data-index="${index}">🗑️</button>
                 </td>
             </tr>
         `;
@@ -376,20 +399,42 @@ function setupEventListeners() {
         }
     });
 
-    // 기록 추가 폼
-    document.getElementById('record-form').addEventListener('submit', (e) => {
+    // 호흡 시간 기록 폼
+    document.getElementById('breath-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const date = document.getElementById('record-date').value;
+        const date = document.getElementById('breath-date').value;
         const minutes = document.getElementById('breath-minutes').value;
         const seconds = document.getElementById('breath-seconds').value;
-        const note = document.getElementById('lesson-note').value.trim();
 
         if (date && minutes !== '' && seconds !== '') {
             const breathSeconds = breathTimeToSeconds(minutes, seconds);
-            addRecord(currentClass, currentStudent, { date, breathSeconds, note });
-            document.getElementById('record-form').reset();
-            document.getElementById('record-date').value = new Date().toISOString().split('T')[0];
+            addRecord(currentClass, currentStudent, { date, breathSeconds, note: '' });
+            document.getElementById('breath-form').reset();
+            document.getElementById('breath-date').value = new Date().toISOString().split('T')[0];
             renderRecords();
+            updateNoteDateOptions();
+        }
+    });
+
+    // 배움 한 줄 저장 폼
+    document.getElementById('note-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const recordIndex = document.getElementById('note-date').value;
+        const note = document.getElementById('lesson-note').value.trim();
+
+        if (recordIndex !== '' && note) {
+            const student = findStudent(currentClass, currentStudent);
+            if (student && student.records[recordIndex]) {
+                const record = student.records[recordIndex];
+                updateRecord(currentClass, currentStudent, parseInt(recordIndex), {
+                    date: record.date,
+                    breathSeconds: record.breathSeconds,
+                    note: note
+                });
+                document.getElementById('note-form').reset();
+                renderRecords();
+                updateNoteDateOptions();
+            }
         }
     });
 

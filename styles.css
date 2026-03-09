@@ -388,23 +388,82 @@ footer {
    ======================================== */
 
 .record-container {
-    padding: 16px;
+    padding: 12px;
     max-width: 100%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.add-record-section {
+/* 입력 섹션 공통 스타일 */
+.input-section {
     background: var(--card-bg);
-    border-radius: var(--radius-lg);
-    padding: 20px 16px;
-    margin-bottom: 16px;
+    border-radius: var(--radius);
+    padding: 16px;
     box-shadow: var(--shadow-sm);
 }
 
-.add-record-section h3,
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.section-icon {
+    font-size: 1.25rem;
+}
+
+.section-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    flex: 1;
+    margin: 0;
+}
+
+.section-hint {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    background: var(--bg-color);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.inline-form .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 120px;
+}
+
+.inline-form .form-group.full-width {
+    flex: 100%;
+    min-width: 100%;
+}
+
+.inline-form .btn {
+    flex-shrink: 0;
+    min-width: 70px;
+}
+
+.breath-section {
+    border-left: 3px solid var(--secondary-color);
+}
+
+.note-section {
+    border-left: 3px solid var(--success-color);
+}
+
 .records-section h3 {
-    font-size: 1.125rem;
-    margin-bottom: 16px;
+    font-size: 1rem;
+    margin-bottom: 12px;
     color: var(--text-primary);
 }
 
@@ -472,77 +531,80 @@ footer {
 
 .records-section {
     background: var(--card-bg);
-    border-radius: var(--radius-lg);
-    padding: 20px 16px;
+    border-radius: var(--radius);
+    padding: 16px;
     box-shadow: var(--shadow-sm);
 }
 
-/* 모바일 카드 형식 테이블 */
+/* 테이블 스타일 */
 .records-table-container {
-    overflow-x: visible;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
 }
 
 .records-table {
     width: 100%;
+    min-width: 500px;
     border-collapse: collapse;
+    font-size: 0.8125rem;
 }
 
-/* 테이블 헤더 숨기기 */
 .records-table thead {
-    display: none;
-}
-
-.records-table tbody {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.records-table tr {
-    display: block;
     background: var(--bg-color);
-    border-radius: var(--radius);
-    padding: 16px;
-    border: 1px solid var(--border-color);
+}
+
+.records-table th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.records-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.records-table tbody tr:active {
+    background: var(--bg-color);
 }
 
 .records-table td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border: none;
-    font-size: 0.9375rem;
-}
-
-.records-table td::before {
-    content: attr(data-label);
-    font-weight: 500;
-    color: var(--text-secondary);
-    font-size: 0.8125rem;
-    flex-shrink: 0;
-    margin-right: 12px;
+    padding: 12px 8px;
+    vertical-align: middle;
 }
 
 .records-table .session-num {
     font-weight: 700;
     color: var(--primary-color);
-    font-size: 1rem;
+    text-align: center;
+    min-width: 45px;
+}
+
+.records-table .date-cell {
+    white-space: nowrap;
+    min-width: 65px;
 }
 
 .records-table .breath-time {
     font-family: 'SF Mono', 'Monaco', monospace;
     font-weight: 600;
-    font-size: 1.125rem;
+    font-size: 0.9375rem;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .records-table .change {
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: var(--radius-sm);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .records-table .change.positive {
@@ -556,41 +618,46 @@ footer {
 }
 
 .records-table .change.neutral {
-    background: var(--border-color);
+    background: var(--bg-color);
     color: var(--text-secondary);
 }
 
 .records-table .note {
-    max-width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    text-align: right;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-secondary);
+}
+
+.records-table .note.empty {
+    color: var(--text-light);
+    font-style: italic;
 }
 
 .records-table .actions {
     display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    padding-top: 8px;
-    margin-top: 4px;
-    border-top: 1px solid var(--border-color);
+    gap: 4px;
+    justify-content: center;
 }
 
 .records-table .action-btn {
     background: none;
-    border: 1px solid var(--border-color);
-    padding: 10px 16px;
+    border: none;
+    padding: 8px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     transition: var(--transition);
-    min-height: 44px;
-    touch-action: manipulation;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .records-table .action-btn.edit {
     color: var(--primary-color);
-    border-color: var(--primary-light);
 }
 
 .records-table .action-btn.edit:active {
@@ -599,11 +666,18 @@ footer {
 
 .records-table .action-btn.delete {
     color: var(--danger-color);
-    border-color: #fecaca;
 }
 
 .records-table .action-btn.delete:active {
     background: #fee2e2;
+}
+
+/* 빈 상태 */
+.records-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
 }
 
 /* ========================================

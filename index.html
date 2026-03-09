@@ -115,32 +115,54 @@
                 </div>
             </header>
             <main class="record-container">
-                <section class="add-record-section">
-                    <h3>새 기록 추가</h3>
-                    <form id="record-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="record-date">날짜</label>
-                                <input type="date" id="record-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="breath-minutes">호흡 시간</label>
-                                <div class="breath-input">
-                                    <input type="number" id="breath-minutes" min="0" max="59" placeholder="분" required>
-                                    <span>'</span>
-                                    <input type="number" id="breath-seconds" min="0" max="59" placeholder="초" required>
-                                    <span>"</span>
-                                </div>
-                            </div>
+                <!-- 호흡 시간 입력 (수업 시작 시) -->
+                <section class="input-section breath-section">
+                    <div class="section-header">
+                        <span class="section-icon">🌬️</span>
+                        <h3>호흡 시간 기록</h3>
+                        <span class="section-hint">수업 시작</span>
+                    </div>
+                    <form id="breath-form" class="inline-form">
+                        <div class="form-group">
+                            <label for="breath-date">날짜</label>
+                            <input type="date" id="breath-date" required>
                         </div>
                         <div class="form-group">
-                            <label for="lesson-note">오늘의 배움 한 줄</label>
-                            <textarea id="lesson-note" rows="3" placeholder="오늘 수업에서 배운 것을 적어주세요..."></textarea>
+                            <label>호흡 시간</label>
+                            <div class="breath-input">
+                                <input type="number" id="breath-minutes" min="0" max="59" placeholder="분" required>
+                                <span>'</span>
+                                <input type="number" id="breath-seconds" min="0" max="59" placeholder="초" required>
+                                <span>"</span>
+                            </div>
                         </div>
-                        <button type="submit" class="btn primary">기록 추가</button>
+                        <button type="submit" class="btn primary">기록</button>
                     </form>
                 </section>
 
+                <!-- 배움 한 줄 입력 (수업 종료 시) -->
+                <section class="input-section note-section">
+                    <div class="section-header">
+                        <span class="section-icon">📝</span>
+                        <h3>배움 한 줄</h3>
+                        <span class="section-hint">수업 종료</span>
+                    </div>
+                    <form id="note-form" class="inline-form">
+                        <div class="form-group">
+                            <label for="note-date">날짜 선택</label>
+                            <select id="note-date" required>
+                                <option value="">기록된 날짜 선택</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="lesson-note">오늘의 배움</label>
+                            <textarea id="lesson-note" rows="2" placeholder="오늘 수업에서 배운 것을 적어주세요..."></textarea>
+                        </div>
+                        <button type="submit" class="btn primary">저장</button>
+                    </form>
+                </section>
+
+                <!-- 기록 테이블 -->
                 <section class="records-section">
                     <h3>호흡 훈련 기록</h3>
                     <div class="records-table-container">
@@ -149,10 +171,10 @@
                                 <tr>
                                     <th>회차</th>
                                     <th>날짜</th>
-                                    <th>호흡 시간</th>
+                                    <th>호흡</th>
                                     <th>변화</th>
                                     <th>배움 한 줄</th>
-                                    <th>관리</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody id="records-tbody">
