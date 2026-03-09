@@ -296,7 +296,9 @@ footer {
 }
 
 .btn.full-width {
+    display: block;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .btn-group {
@@ -405,6 +407,12 @@ footer {
     box-shadow: var(--shadow-sm);
 }
 
+.input-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
 .card-title {
     display: flex;
     align-items: center;
@@ -438,7 +446,8 @@ footer {
 }
 
 .form-field {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    width: 100%;
 }
 
 .form-field label {
@@ -449,17 +458,22 @@ footer {
     margin-bottom: 6px;
 }
 
-.form-field input,
+.form-field input[type="date"],
+.form-field input[type="text"],
 .form-field select,
 .form-field textarea {
+    display: block;
     width: 100%;
-    padding: 12px;
+    padding: 12px 14px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 16px;
     font-family: inherit;
     background: var(--bg-color);
     min-height: 48px;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-field textarea {
