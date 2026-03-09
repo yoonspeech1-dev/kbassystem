@@ -336,6 +336,7 @@ function setupEventListeners() {
     // 학생 등록 모달
     document.getElementById('register-student-btn').addEventListener('click', () => {
         document.getElementById('register-form').reset();
+        document.getElementById('student-dept-custom').style.display = 'none';
         openModal('register-modal');
     });
 
@@ -343,12 +344,30 @@ function setupEventListeners() {
         closeModal('register-modal');
     });
 
+    // 학과 직접입력 처리
+    document.getElementById('student-dept').addEventListener('change', (e) => {
+        const customInput = document.getElementById('student-dept-custom');
+        if (e.target.value === '직접입력') {
+            customInput.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customInput.style.display = 'none';
+            customInput.required = false;
+            customInput.value = '';
+        }
+    });
+
     // 학생 등록 폼
     document.getElementById('register-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('student-name').value.trim();
         const year = document.getElementById('student-year').value;
-        const dept = document.getElementById('student-dept').value;
+        let dept = document.getElementById('student-dept').value;
+
+        // 직접입력인 경우 커스텀 입력값 사용
+        if (dept === '직접입력') {
+            dept = document.getElementById('student-dept-custom').value.trim();
+        }
 
         if (name && year && dept) {
             addStudent(currentClass, { name, year, dept });
