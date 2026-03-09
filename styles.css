@@ -433,13 +433,12 @@ footer {
 
 .form-row-mobile {
     display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
+    flex-direction: column;
+    gap: 0;
 }
 
 .form-field {
-    flex: 1;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .form-field label {
@@ -460,11 +459,11 @@ footer {
     font-size: 16px;
     font-family: inherit;
     background: var(--bg-color);
-    min-height: 44px;
+    min-height: 48px;
 }
 
 .form-field textarea {
-    min-height: 60px;
+    min-height: 70px;
     resize: none;
 }
 
@@ -479,18 +478,20 @@ footer {
 .time-input {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .time-input input {
-    width: 60px;
+    flex: 1;
+    max-width: 80px;
     text-align: center;
     padding: 12px 8px;
 }
 
 .time-input span {
-    font-size: 0.875rem;
+    font-size: 1rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .form-row {
