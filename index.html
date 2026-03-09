@@ -116,71 +116,57 @@
             </header>
             <main class="record-container">
                 <!-- 호흡 시간 입력 (수업 시작 시) -->
-                <section class="input-section breath-section">
-                    <div class="section-header">
-                        <span class="section-icon">🌬️</span>
-                        <h3>호흡 시간 기록</h3>
-                        <span class="section-hint">수업 시작</span>
+                <section class="input-card">
+                    <div class="card-title">
+                        <span>🌬️ 호흡 시간</span>
+                        <span class="badge blue">수업 시작</span>
                     </div>
-                    <form id="breath-form" class="inline-form">
-                        <div class="form-group">
-                            <label for="breath-date">날짜</label>
-                            <input type="date" id="breath-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label>호흡 시간</label>
-                            <div class="breath-input">
-                                <input type="number" id="breath-minutes" min="0" max="59" placeholder="분" required>
-                                <span>'</span>
-                                <input type="number" id="breath-seconds" min="0" max="59" placeholder="초" required>
-                                <span>"</span>
+                    <form id="breath-form">
+                        <div class="form-row-mobile">
+                            <div class="form-field">
+                                <label>날짜</label>
+                                <input type="date" id="breath-date" required>
+                            </div>
+                            <div class="form-field">
+                                <label>시간</label>
+                                <div class="time-input">
+                                    <input type="number" id="breath-minutes" min="0" max="59" placeholder="0" required>
+                                    <span>분</span>
+                                    <input type="number" id="breath-seconds" min="0" max="59" placeholder="0" required>
+                                    <span>초</span>
+                                </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn primary">기록</button>
+                        <button type="submit" class="btn primary full-width">호흡 기록하기</button>
                     </form>
                 </section>
 
                 <!-- 배움 한 줄 입력 (수업 종료 시) -->
-                <section class="input-section note-section">
-                    <div class="section-header">
-                        <span class="section-icon">📝</span>
-                        <h3>배움 한 줄</h3>
-                        <span class="section-hint">수업 종료</span>
+                <section class="input-card">
+                    <div class="card-title">
+                        <span>📝 배움 한 줄</span>
+                        <span class="badge green">수업 종료</span>
                     </div>
-                    <form id="note-form" class="inline-form">
-                        <div class="form-group">
-                            <label for="note-date">날짜 선택</label>
-                            <select id="note-date" required>
-                                <option value="">기록된 날짜 선택</option>
-                            </select>
+                    <form id="note-form">
+                        <div class="form-field">
+                            <label>날짜</label>
+                            <input type="date" id="note-date" required>
                         </div>
-                        <div class="form-group full-width">
-                            <label for="lesson-note">오늘의 배움</label>
+                        <div class="form-field">
+                            <label>오늘의 배움</label>
                             <textarea id="lesson-note" rows="2" placeholder="오늘 수업에서 배운 것을 적어주세요..."></textarea>
                         </div>
-                        <button type="submit" class="btn primary">저장</button>
+                        <button type="submit" class="btn primary full-width">배움 저장하기</button>
                     </form>
                 </section>
 
                 <!-- 기록 테이블 -->
-                <section class="records-section">
-                    <h3>호흡 훈련 기록</h3>
-                    <div class="records-table-container">
-                        <table class="records-table">
-                            <thead>
-                                <tr>
-                                    <th>회차</th>
-                                    <th>날짜</th>
-                                    <th>호흡</th>
-                                    <th>변화</th>
-                                    <th>배움 한 줄</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="records-tbody">
-                                <!-- 기록들이 여기에 동적으로 추가됨 -->
-                            </tbody>
-                        </table>
+                <section class="records-card">
+                    <div class="card-title">
+                        <span>📊 호흡 훈련 기록</span>
+                    </div>
+                    <div class="records-list" id="records-list">
+                        <!-- 기록들이 여기에 동적으로 추가됨 -->
                     </div>
                 </section>
             </main>

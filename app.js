@@ -172,30 +172,12 @@ function showStudentPage(studentId) {
         document.getElementById('student-name-title').textContent = student.name;
         document.getElementById('student-meta').textContent = `${student.year}학년 | ${student.dept}`;
         renderRecords();
-        updateNoteDateOptions();
         showPage('student-page');
 
         // 오늘 날짜를 기본값으로 설정
-        document.getElementById('breath-date').value = new Date().toISOString().split('T')[0];
-    }
-}
-
-// 배움 한 줄 날짜 선택 옵션 업데이트
-function updateNoteDateOptions() {
-    const student = findStudent(currentClass, currentStudent);
-    const select = document.getElementById('note-date');
-
-    select.innerHTML = '<option value="">기록된 날짜 선택</option>';
-
-    if (student && student.records.length > 0) {
-        // 최신 날짜순으로 정렬
-        const sortedRecords = [...student.records].reverse();
-        sortedRecords.forEach((record, idx) => {
-            const originalIdx = student.records.length - 1 - idx;
-            const hasNote = record.note && record.note.trim();
-            const noteStatus = hasNote ? ' ✓' : ' (미입력)';
-            select.innerHTML += `<option value="${originalIdx}">${formatDate(record.date)}${noteStatus}</option>`;
-        });
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('breath-date').value = today;
+        document.getElementById('note-date').value = today;
     }
 }
 
@@ -251,20 +233,23 @@ function renderRecords() {
     const student = findStudent(currentClass, currentStudent);
     if (!student) return;
 
-    const tbody = document.getElementById('records-tbody');
+    const list = document.getElementById('records-list');
 
     if (student.records.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="records-empty">
-                    아직 기록이 없습니다.<br>호흡 시간을 기록해주세요.
-                </td>
-            </tr>
+        list.innerHTML = `
+            <div class="records-empty">
+                아직 기록이 없습니다.<br>호흡 시간을 기록해주세요.
+            </div>
         `;
         return;
     }
 
-    tbody.innerHTML = student.records.map((record, index) => {
+    // 최신 기록이 위로 오도록 역순 표시
+    const reversedRecords = [...student.records].reverse();
+
+    list.innerHTML = reversedRecords.map((record, revIdx) => {
+        const index = student.records.length - 1 - revIdx;
+
         let changeHtml = '<span class="change neutral">-</span>';
         if (index > 0) {
             const change = calculateChange(
@@ -274,30 +259,36 @@ function renderRecords() {
             changeHtml = `<span class="change ${change.class}">${change.value}</span>`;
         }
 
-        const noteClass = record.note ? 'note' : 'note empty';
-        const noteText = record.note || '미입력';
+        const noteClass = record.note ? 'record-note' : 'record-note empty';
+        const noteText = record.note || '배움 미입력';
 
         return `
-            <tr>
-                <td class="session-num">${index + 1}</td>
-                <td class="date-cell">${formatDate(record.date)}</td>
-                <td class="breath-time">${secondsToBreathTime(record.breathSeconds)}</td>
-                <td>${changeHtml}</td>
-                <td class="${noteClass}" title="${record.note || ''}">${noteText}</td>
-                <td class="actions">
-                    <button class="action-btn edit" data-index="${index}">✏️</button>
-                    <button class="action-btn delete" data-index="${index}">🗑️</button>
-                </td>
-            </tr>
+            <div class="record-item">
+                <div class="record-header">
+                    <span class="record-num">${index + 1}회차</span>
+                    <span class="record-date">${formatDate(record.date)}</span>
+                    <div class="record-actions">
+                        <button class="edit-btn" data-index="${index}">수정</button>
+                        <button class="delete-btn" data-index="${index}">삭제</button>
+                    </div>
+                </div>
+                <div class="record-body">
+                    <div class="record-breath">
+                        <span class="time">${secondsToBreathTime(record.breathSeconds)}</span>
+                        ${changeHtml}
+                    </div>
+                    <div class="${noteClass}">${noteText}</div>
+                </div>
+            </div>
         `;
     }).join('');
 
     // 수정/삭제 버튼 이벤트
-    tbody.querySelectorAll('.action-btn.edit').forEach(btn => {
+    list.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.index)));
     });
 
-    tbody.querySelectorAll('.action-btn.delete').forEach(btn => {
+    list.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', () => openDeleteModal('record', parseInt(btn.dataset.index)));
     });
 }
@@ -409,31 +400,37 @@ function setupEventListeners() {
         if (date && minutes !== '' && seconds !== '') {
             const breathSeconds = breathTimeToSeconds(minutes, seconds);
             addRecord(currentClass, currentStudent, { date, breathSeconds, note: '' });
-            document.getElementById('breath-form').reset();
-            document.getElementById('breath-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('breath-minutes').value = '';
+            document.getElementById('breath-seconds').value = '';
             renderRecords();
-            updateNoteDateOptions();
+            alert('호흡 기록이 저장되었습니다.');
         }
     });
 
     // 배움 한 줄 저장 폼
     document.getElementById('note-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const recordIndex = document.getElementById('note-date').value;
+        const date = document.getElementById('note-date').value;
         const note = document.getElementById('lesson-note').value.trim();
 
-        if (recordIndex !== '' && note) {
+        if (date && note) {
             const student = findStudent(currentClass, currentStudent);
-            if (student && student.records[recordIndex]) {
-                const record = student.records[recordIndex];
-                updateRecord(currentClass, currentStudent, parseInt(recordIndex), {
-                    date: record.date,
-                    breathSeconds: record.breathSeconds,
-                    note: note
-                });
-                document.getElementById('note-form').reset();
-                renderRecords();
-                updateNoteDateOptions();
+            if (student) {
+                // 해당 날짜의 기록 찾기
+                const recordIndex = student.records.findIndex(r => r.date === date);
+                if (recordIndex !== -1) {
+                    const record = student.records[recordIndex];
+                    updateRecord(currentClass, currentStudent, recordIndex, {
+                        date: record.date,
+                        breathSeconds: record.breathSeconds,
+                        note: note
+                    });
+                    document.getElementById('lesson-note').value = '';
+                    renderRecords();
+                    alert('배움 한 줄이 저장되었습니다.');
+                } else {
+                    alert('해당 날짜에 호흡 기록이 없습니다.\n먼저 호흡 시간을 기록해주세요.');
+                }
             }
         }
     });
