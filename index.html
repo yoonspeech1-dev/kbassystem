@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="format-detection" content="telephone=no">
+    <title>발성과 발음 수업 관리 시스템 | 윤소윤 교수</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- 메인 페이지 - 반 선택 -->
+        <div id="main-page" class="page active">
+            <header class="main-header">
+                <div class="logo">KBAS</div>
+                <h1>한국방송예술진흥원</h1>
+                <h2>발성과 발음 수업 관리 시스템</h2>
+                <p class="professor">담당교수: 윤소윤</p>
+            </header>
+            <main class="class-selection">
+                <h3>반을 선택하세요</h3>
+                <div class="class-buttons">
+                    <button class="class-btn" data-class="mon-am">
+                        <span class="day">월요일</span>
+                        <span class="time">오전반</span>
+                    </button>
+                    <button class="class-btn" data-class="mon-pm">
+                        <span class="day">월요일</span>
+                        <span class="time">오후반</span>
+                    </button>
+                    <button class="class-btn" data-class="tue-pm">
+                        <span class="day">화요일</span>
+                        <span class="time">오후반</span>
+                    </button>
+                </div>
+            </main>
+            <footer>
+                <p>&copy; 2026 한국방송예술진흥원 발성과 발음 수업</p>
+            </footer>
+        </div>
+
+        <!-- 반 페이지 - 학생 목록 -->
+        <div id="class-page" class="page">
+            <header class="sub-header">
+                <button class="back-btn" id="back-to-main">&larr; 반 선택</button>
+                <h1 id="class-title">월요일 오전반</h1>
+            </header>
+            <main class="student-list-container">
+                <div class="student-actions">
+                    <button class="btn primary" id="register-student-btn">+ 학생 등록하기</button>
+                </div>
+                <div class="student-grid" id="student-grid">
+                    <!-- 학생 카드들이 여기에 동적으로 추가됨 -->
+                </div>
+            </main>
+        </div>
+
+        <!-- 학생 등록 모달 -->
+        <div id="register-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>학생 등록</h2>
+                    <button class="close-btn" id="close-register-modal">&times;</button>
+                </div>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="student-name">이름</label>
+                        <input type="text" id="student-name" required placeholder="이름을 입력하세요">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-year">학년</label>
+                        <select id="student-year" required>
+                            <option value="">학년 선택</option>
+                            <option value="1">1학년</option>
+                            <option value="2">2학년</option>
+                            <option value="3">3학년</option>
+                            <option value="4">4학년</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-dept">학과</label>
+                        <select id="student-dept" required>
+                            <option value="">학과 선택</option>
+                            <option value="방송연예">방송연예과</option>
+                            <option value="연기">연기과</option>
+                            <option value="뮤지컬">뮤지컬과</option>
+                            <option value="실용음악">실용음악과</option>
+                            <option value="모델">모델과</option>
+                            <option value="영상제작">영상제작과</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn primary full-width">등록하기</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 학생 관리 페이지 -->
+        <div id="student-page" class="page">
+            <header class="sub-header">
+                <button class="back-btn" id="back-to-class">&larr; 반으로 돌아가기</button>
+                <div class="student-info-header">
+                    <div>
+                        <h1 id="student-name-title">학생 이름</h1>
+                        <span id="student-meta" class="student-meta">2학년 | 방송연예과</span>
+                    </div>
+                    <button class="btn danger small" id="delete-student-btn">삭제</button>
+                </div>
+            </header>
+            <main class="record-container">
+                <section class="add-record-section">
+                    <h3>새 기록 추가</h3>
+                    <form id="record-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="record-date">날짜</label>
+                                <input type="date" id="record-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="breath-minutes">호흡 시간</label>
+                                <div class="breath-input">
+                                    <input type="number" id="breath-minutes" min="0" max="59" placeholder="분" required>
+                                    <span>'</span>
+                                    <input type="number" id="breath-seconds" min="0" max="59" placeholder="초" required>
+                                    <span>"</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lesson-note">오늘의 배움 한 줄</label>
+                            <textarea id="lesson-note" rows="3" placeholder="오늘 수업에서 배운 것을 적어주세요..."></textarea>
+                        </div>
+                        <button type="submit" class="btn primary">기록 추가</button>
+                    </form>
+                </section>
+
+                <section class="records-section">
+                    <h3>호흡 훈련 기록</h3>
+                    <div class="records-table-container">
+                        <table class="records-table">
+                            <thead>
+                                <tr>
+                                    <th>회차</th>
+                                    <th>날짜</th>
+                                    <th>호흡 시간</th>
+                                    <th>변화</th>
+                                    <th>배움 한 줄</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-tbody">
+                                <!-- 기록들이 여기에 동적으로 추가됨 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- 기록 수정 모달 -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>기록 수정</h2>
+                    <button class="close-btn" id="close-edit-modal">&times;</button>
+                </div>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-record-index">
+                    <div class="form-group">
+                        <label for="edit-date">날짜</label>
+                        <input type="date" id="edit-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-minutes">호흡 시간</label>
+                        <div class="breath-input">
+                            <input type="number" id="edit-minutes" min="0" max="59" placeholder="분" required>
+                            <span>'</span>
+                            <input type="number" id="edit-seconds" min="0" max="59" placeholder="초" required>
+                            <span>"</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-note">오늘의 배움 한 줄</label>
+                        <textarea id="edit-note" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn primary full-width">수정 완료</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 삭제 확인 모달 -->
+        <div id="delete-modal" class="modal">
+            <div class="modal-content small">
+                <div class="modal-header">
+                    <h2>삭제 확인</h2>
+                    <button class="close-btn" id="close-delete-modal">&times;</button>
+                </div>
+                <p class="delete-message">삭제하려면 비밀번호를 입력하세요.</p>
+                <form id="delete-form">
+                    <input type="hidden" id="delete-type">
+                    <input type="hidden" id="delete-index">
+                    <div class="form-group">
+                        <label for="delete-password">비밀번호</label>
+                        <input type="password" id="delete-password" required placeholder="비밀번호 입력">
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn secondary" id="cancel-delete">취소</button>
+                        <button type="submit" class="btn danger">삭제</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
