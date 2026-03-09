@@ -122,19 +122,17 @@
                         <span class="badge blue">수업 시작</span>
                     </div>
                     <form id="breath-form">
-                        <div class="form-row-mobile">
-                            <div class="form-field">
-                                <label>날짜</label>
-                                <input type="date" id="breath-date" required>
-                            </div>
-                            <div class="form-field">
-                                <label>시간</label>
-                                <div class="time-input">
-                                    <input type="number" id="breath-minutes" min="0" max="59" placeholder="0" required>
-                                    <span>분</span>
-                                    <input type="number" id="breath-seconds" min="0" max="59" placeholder="0" required>
-                                    <span>초</span>
-                                </div>
+                        <div class="form-field">
+                            <label>날짜</label>
+                            <input type="date" id="breath-date" required>
+                        </div>
+                        <div class="form-field">
+                            <label>호흡 시간 (분:초)</label>
+                            <div class="time-input-row">
+                                <input type="number" id="breath-minutes" min="0" max="59" placeholder="0" required>
+                                <span class="time-label">분</span>
+                                <input type="number" id="breath-seconds" min="0" max="59" placeholder="0" required>
+                                <span class="time-label">초</span>
                             </div>
                         </div>
                         <button type="submit" class="btn primary full-width">호흡 기록하기</button>

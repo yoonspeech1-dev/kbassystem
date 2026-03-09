@@ -475,23 +475,35 @@ footer {
     background: var(--card-bg);
 }
 
-.time-input {
+.time-input-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-.time-input input {
-    flex: 1;
-    max-width: 80px;
+.time-input-row input {
+    width: 70px;
     text-align: center;
-    padding: 12px 8px;
+    padding: 14px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 18px;
+    font-weight: 600;
+    background: var(--bg-color);
+    min-height: 48px;
 }
 
-.time-input span {
+.time-input-row input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--card-bg);
+}
+
+.time-label {
     font-size: 1rem;
     color: var(--text-secondary);
     font-weight: 500;
+    min-width: 20px;
 }
 
 .form-row {
