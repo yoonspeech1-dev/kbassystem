@@ -10,7 +10,13 @@
 const SUPABASE_URL = 'https://cjnxhjofzrcdnqtwdbeb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqbnhoam9menJjZG5xdHdkYmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDI5MjQsImV4cCI6MjA4ODc3ODkyNH0.dU9rbRKBPz4pNH6MDW1_xNQEbIJYT9fwfkNZIL_MWvk';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase;
+try {
+    const { createClient } = window.supabase;
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+    console.error('Supabase 초기화 오류:', e);
+}
 
 const DELETE_PASSWORD = '2026';
 
@@ -26,22 +32,32 @@ const CLASS_NAMES = {
 
 // 특정 반의 학생 목록 가져오기
 async function getStudents(classId) {
-    const { data, error } = await supabase
-        .from('students')
-        .select('*, records(*)')
-        .eq('class_id', classId)
-        .order('created_at', { ascending: true });
-
-    if (error) {
-        console.error('학생 조회 오류:', error);
+    if (!supabase) {
+        console.error('Supabase가 초기화되지 않았습니다.');
         return [];
     }
 
-    // records를 날짜순 정렬
-    return data.map(student => ({
-        ...student,
-        records: (student.records || []).sort((a, b) => new Date(a.date) - new Date(b.date))
-    }));
+    try {
+        const { data, error } = await supabase
+            .from('students')
+            .select('*, records(*)')
+            .eq('class_id', classId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('학생 조회 오류:', error);
+            return [];
+        }
+
+        // records를 날짜순 정렬
+        return data.map(student => ({
+            ...student,
+            records: (student.records || []).sort((a, b) => new Date(a.date) - new Date(b.date))
+        }));
+    } catch (e) {
+        console.error('학생 조회 예외:', e);
+        return [];
+    }
 }
 
 // 학생 추가
@@ -208,7 +224,12 @@ async function showClassPage(classId) {
     currentStudentData = null;
     document.getElementById('class-title').textContent = CLASS_NAMES[classId];
     showPage('class-page');
-    await renderStudentList();
+    try {
+        await renderStudentList();
+    } catch (e) {
+        console.error('학생 목록 로드 오류:', e);
+        document.getElementById('student-grid').innerHTML = '<div class="empty-state"><p>데이터를 불러올 수 없습니다.</p></div>';
+    }
 }
 
 async function showStudentPage(studentId) {
