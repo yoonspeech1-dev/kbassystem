@@ -10,10 +10,9 @@
 const SUPABASE_URL = 'https://cjnxhjofzrcdnqtwdbeb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqbnhoam9menJjZG5xdHdkYmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDI5MjQsImV4cCI6MjA4ODc3ODkyNH0.dU9rbRKBPz4pNH6MDW1_xNQEbIJYT9fwfkNZIL_MWvk';
 
-let supabase;
+let db;
 try {
-    const { createClient } = window.supabase;
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
     console.error('Supabase 초기화 오류:', e);
 }
@@ -32,13 +31,13 @@ const CLASS_NAMES = {
 
 // 특정 반의 학생 목록 가져오기
 async function getStudents(classId) {
-    if (!supabase) {
+    if (!db) {
         console.error('Supabase가 초기화되지 않았습니다.');
         return [];
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('students')
             .select('*, records(*)')
             .eq('class_id', classId)
@@ -62,7 +61,7 @@ async function getStudents(classId) {
 
 // 학생 추가
 async function addStudent(classId, student) {
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('students')
         .insert({
             class_id: classId,
@@ -84,7 +83,7 @@ async function addStudent(classId, student) {
 
 // 학생 삭제
 async function deleteStudent(classId, studentId) {
-    const { error } = await supabase
+    const { error } = await db
         .from('students')
         .delete()
         .eq('id', studentId);
@@ -97,7 +96,7 @@ async function deleteStudent(classId, studentId) {
 
 // 학생 찾기
 async function findStudent(classId, studentId) {
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('students')
         .select('*, records(*)')
         .eq('id', studentId)
@@ -116,7 +115,7 @@ async function findStudent(classId, studentId) {
 
 // 기록 추가
 async function addRecord(classId, studentId, record) {
-    const { error } = await supabase
+    const { error } = await db
         .from('records')
         .insert({
             student_id: studentId,
@@ -133,7 +132,7 @@ async function addRecord(classId, studentId, record) {
 
 // 기록 수정
 async function updateRecord(classId, studentId, recordId, newRecord) {
-    const { error } = await supabase
+    const { error } = await db
         .from('records')
         .update({
             date: newRecord.date,
@@ -150,7 +149,7 @@ async function updateRecord(classId, studentId, recordId, newRecord) {
 
 // 기록 삭제
 async function deleteRecord(classId, studentId, recordId) {
-    const { error } = await supabase
+    const { error } = await db
         .from('records')
         .delete()
         .eq('id', recordId);
