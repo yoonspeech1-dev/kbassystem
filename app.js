@@ -4,10 +4,14 @@
  */
 
 // ========================================
-// 데이터 관리
+// Supabase 설정
 // ========================================
 
-const DATA_KEY = 'kbas_breath_training_data';
+const SUPABASE_URL = 'https://cjnxhjofzrcdnqtwdbeb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqbnhoam9menJjZG5xdHdkYmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDI5MjQsImV4cCI6MjA4ODc3ODkyNH0.dU9rbRKBPz4pNH6MDW1_xNQEbIJYT9fwfkNZIL_MWvk';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const DELETE_PASSWORD = '2026';
 
 const CLASS_NAMES = {
@@ -16,89 +20,128 @@ const CLASS_NAMES = {
     'tue-pm': '화요일 오후반'
 };
 
-// 데이터 초기화
-function initData() {
-    const existingData = localStorage.getItem(DATA_KEY);
-    if (!existingData) {
-        const initialData = {
-            'mon-am': [],
-            'mon-pm': [],
-            'tue-pm': []
-        };
-        localStorage.setItem(DATA_KEY, JSON.stringify(initialData));
-    }
-}
-
-// 전체 데이터 가져오기
-function getData() {
-    const data = localStorage.getItem(DATA_KEY);
-    return data ? JSON.parse(data) : { 'mon-am': [], 'mon-pm': [], 'tue-pm': [] };
-}
-
-// 데이터 저장
-function saveData(data) {
-    localStorage.setItem(DATA_KEY, JSON.stringify(data));
-}
+// ========================================
+// 데이터 관리 (Supabase)
+// ========================================
 
 // 특정 반의 학생 목록 가져오기
-function getStudents(classId) {
-    const data = getData();
-    return data[classId] || [];
+async function getStudents(classId) {
+    const { data, error } = await supabase
+        .from('students')
+        .select('*, records(*)')
+        .eq('class_id', classId)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('학생 조회 오류:', error);
+        return [];
+    }
+
+    // records를 날짜순 정렬
+    return data.map(student => ({
+        ...student,
+        records: (student.records || []).sort((a, b) => new Date(a.date) - new Date(b.date))
+    }));
 }
 
 // 학생 추가
-function addStudent(classId, student) {
-    const data = getData();
-    student.id = Date.now().toString();
-    student.records = [];
-    data[classId].push(student);
-    saveData(data);
-    return student;
+async function addStudent(classId, student) {
+    const { data, error } = await supabase
+        .from('students')
+        .insert({
+            class_id: classId,
+            name: student.name,
+            year: student.year,
+            dept: student.dept
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error('학생 등록 오류:', error);
+        alert('학생 등록에 실패했습니다.');
+        return null;
+    }
+
+    return { ...data, records: [] };
 }
 
 // 학생 삭제
-function deleteStudent(classId, studentId) {
-    const data = getData();
-    data[classId] = data[classId].filter(s => s.id !== studentId);
-    saveData(data);
+async function deleteStudent(classId, studentId) {
+    const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', studentId);
+
+    if (error) {
+        console.error('학생 삭제 오류:', error);
+        alert('학생 삭제에 실패했습니다.');
+    }
 }
 
 // 학생 찾기
-function findStudent(classId, studentId) {
-    const students = getStudents(classId);
-    return students.find(s => s.id === studentId);
+async function findStudent(classId, studentId) {
+    const { data, error } = await supabase
+        .from('students')
+        .select('*, records(*)')
+        .eq('id', studentId)
+        .single();
+
+    if (error) {
+        console.error('학생 조회 오류:', error);
+        return null;
+    }
+
+    return {
+        ...data,
+        records: (data.records || []).sort((a, b) => new Date(a.date) - new Date(b.date))
+    };
 }
 
 // 기록 추가
-function addRecord(classId, studentId, record) {
-    const data = getData();
-    const student = data[classId].find(s => s.id === studentId);
-    if (student) {
-        student.records.push(record);
-        // 날짜순 정렬
-        student.records.sort((a, b) => new Date(a.date) - new Date(b.date));
-        saveData(data);
+async function addRecord(classId, studentId, record) {
+    const { error } = await supabase
+        .from('records')
+        .insert({
+            student_id: studentId,
+            date: record.date,
+            breath_seconds: record.breathSeconds,
+            note: record.note || ''
+        });
+
+    if (error) {
+        console.error('기록 추가 오류:', error);
+        alert('기록 추가에 실패했습니다.');
     }
 }
 
 // 기록 수정
-function updateRecord(classId, studentId, recordIndex, newRecord) {
-    const data = getData();
-    const student = data[classId].find(s => s.id === studentId);
-    if (student && student.records[recordIndex]) {
-        student.records[recordIndex] = newRecord;
-        student.records.sort((a, b) => new Date(a.date) - new Date(b.date));
-        saveData(data);
+async function updateRecord(classId, studentId, recordId, newRecord) {
+    const { error } = await supabase
+        .from('records')
+        .update({
+            date: newRecord.date,
+            breath_seconds: newRecord.breathSeconds,
+            note: newRecord.note || ''
+        })
+        .eq('id', recordId);
+
+    if (error) {
+        console.error('기록 수정 오류:', error);
+        alert('기록 수정에 실패했습니다.');
     }
 }
 
 // 기록 삭제
-function deleteRecord(classId, studentId, recordIndex) {
-    const data = getData();
-    const student = data[classId].find(s => s.id === studentId);
-    if (student) {
-        student.records.splice(recordIndex, 1);
-        saveData(data);
+async function deleteRecord(classId, studentId, recordId) {
+    const { error } = await supabase
+        .from('records')
+        .delete()
+        .eq('id', recordId);
+
+    if (error) {
+        console.error('기록 삭제 오류:', error);
+        alert('기록 삭제에 실패했습니다.');
     }
 }
 
@@ -143,6 +186,7 @@ function formatDate(dateStr) {
 
 let currentClass = null;
 let currentStudent = null;
+let currentStudentData = null;
 
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(page => {
@@ -154,21 +198,24 @@ function showPage(pageId) {
 function showMainPage() {
     currentClass = null;
     currentStudent = null;
+    currentStudentData = null;
     showPage('main-page');
 }
 
-function showClassPage(classId) {
+async function showClassPage(classId) {
     currentClass = classId;
     currentStudent = null;
+    currentStudentData = null;
     document.getElementById('class-title').textContent = CLASS_NAMES[classId];
-    renderStudentList();
     showPage('class-page');
+    await renderStudentList();
 }
 
-function showStudentPage(studentId) {
+async function showStudentPage(studentId) {
     currentStudent = studentId;
-    const student = findStudent(currentClass, studentId);
+    const student = await findStudent(currentClass, studentId);
     if (student) {
+        currentStudentData = student;
         document.getElementById('student-name-title').textContent = student.name;
         document.getElementById('student-meta').textContent = `${student.year}학년 | ${student.dept}`;
         renderRecords();
@@ -185,9 +232,11 @@ function showStudentPage(studentId) {
 // 학생 목록 렌더링
 // ========================================
 
-function renderStudentList() {
-    const students = getStudents(currentClass);
+async function renderStudentList() {
     const grid = document.getElementById('student-grid');
+    grid.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+    const students = await getStudents(currentClass);
 
     if (students.length === 0) {
         grid.innerHTML = `
@@ -202,7 +251,7 @@ function renderStudentList() {
     grid.innerHTML = students.map(student => {
         const latestRecord = student.records[student.records.length - 1];
         const breathSummary = latestRecord
-            ? `최근 호흡: ${secondsToBreathTime(latestRecord.breathSeconds)}`
+            ? `최근 호흡: ${secondsToBreathTime(latestRecord.breath_seconds)}`
             : '기록 없음';
 
         return `
@@ -230,7 +279,7 @@ function renderStudentList() {
 // ========================================
 
 function renderRecords() {
-    const student = findStudent(currentClass, currentStudent);
+    const student = currentStudentData;
     if (!student) return;
 
     const list = document.getElementById('records-list');
@@ -253,8 +302,8 @@ function renderRecords() {
         let changeHtml = '<span class="change neutral">-</span>';
         if (index > 0) {
             const change = calculateChange(
-                record.breathSeconds,
-                student.records[index - 1].breathSeconds
+                record.breath_seconds,
+                student.records[index - 1].breath_seconds
             );
             changeHtml = `<span class="change ${change.class}">${change.value}</span>`;
         }
@@ -268,13 +317,13 @@ function renderRecords() {
                     <span class="record-num">${index + 1}회차</span>
                     <span class="record-date">${formatDate(record.date)}</span>
                     <div class="record-actions">
-                        <button class="edit-btn" data-index="${index}">수정</button>
-                        <button class="delete-btn" data-index="${index}">삭제</button>
+                        <button class="edit-btn" data-record-id="${record.id}" data-index="${index}">수정</button>
+                        <button class="delete-btn" data-record-id="${record.id}">삭제</button>
                     </div>
                 </div>
                 <div class="record-body">
                     <div class="record-breath">
-                        <span class="time">${secondsToBreathTime(record.breathSeconds)}</span>
+                        <span class="time">${secondsToBreathTime(record.breath_seconds)}</span>
                         ${changeHtml}
                     </div>
                     <div class="${noteClass}">${noteText}</div>
@@ -285,11 +334,11 @@ function renderRecords() {
 
     // 수정/삭제 버튼 이벤트
     list.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.index)));
+        btn.addEventListener('click', () => openEditModal(btn.dataset.recordId, parseInt(btn.dataset.index)));
     });
 
     list.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => openDeleteModal('record', parseInt(btn.dataset.index)));
+        btn.addEventListener('click', () => openDeleteModal('record', btn.dataset.recordId));
     });
 }
 
@@ -305,15 +354,15 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
-function openEditModal(recordIndex) {
-    const student = findStudent(currentClass, currentStudent);
+function openEditModal(recordId, recordIndex) {
+    const student = currentStudentData;
     if (!student || !student.records[recordIndex]) return;
 
     const record = student.records[recordIndex];
-    const minutes = Math.floor(record.breathSeconds / 60);
-    const seconds = record.breathSeconds % 60;
+    const minutes = Math.floor(record.breath_seconds / 60);
+    const seconds = record.breath_seconds % 60;
 
-    document.getElementById('edit-record-index').value = recordIndex;
+    document.getElementById('edit-record-id').value = recordId;
     document.getElementById('edit-date').value = record.date;
     document.getElementById('edit-minutes').value = minutes;
     document.getElementById('edit-seconds').value = seconds;
@@ -322,9 +371,9 @@ function openEditModal(recordIndex) {
     openModal('edit-modal');
 }
 
-function openDeleteModal(type, index) {
+function openDeleteModal(type, id) {
     document.getElementById('delete-type').value = type;
-    document.getElementById('delete-index').value = index;
+    document.getElementById('delete-id').value = id;
     document.getElementById('delete-password').value = '';
     openModal('delete-modal');
 }
@@ -372,7 +421,7 @@ function setupEventListeners() {
     });
 
     // 학생 등록 폼
-    document.getElementById('register-form').addEventListener('submit', (e) => {
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('student-name').value.trim();
         const year = document.getElementById('student-year').value;
@@ -384,14 +433,14 @@ function setupEventListeners() {
         }
 
         if (name && year && dept) {
-            addStudent(currentClass, { name, year, dept });
+            await addStudent(currentClass, { name, year, dept });
             closeModal('register-modal');
-            renderStudentList();
+            await renderStudentList();
         }
     });
 
     // 호흡 시간 기록 폼
-    document.getElementById('breath-form').addEventListener('submit', (e) => {
+    document.getElementById('breath-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const date = document.getElementById('breath-date').value;
         const minutes = document.getElementById('breath-minutes').value;
@@ -399,33 +448,38 @@ function setupEventListeners() {
 
         if (date && minutes !== '' && seconds !== '') {
             const breathSeconds = breathTimeToSeconds(minutes, seconds);
-            addRecord(currentClass, currentStudent, { date, breathSeconds, note: '' });
+            await addRecord(currentClass, currentStudent, { date, breathSeconds, note: '' });
             document.getElementById('breath-minutes').value = '';
             document.getElementById('breath-seconds').value = '';
+
+            // 학생 데이터 다시 불러오기
+            currentStudentData = await findStudent(currentClass, currentStudent);
             renderRecords();
             alert('호흡 기록이 저장되었습니다.');
         }
     });
 
     // 배움 한 줄 저장 폼
-    document.getElementById('note-form').addEventListener('submit', (e) => {
+    document.getElementById('note-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const date = document.getElementById('note-date').value;
         const note = document.getElementById('lesson-note').value.trim();
 
         if (date && note) {
-            const student = findStudent(currentClass, currentStudent);
+            const student = currentStudentData;
             if (student) {
                 // 해당 날짜의 기록 찾기
-                const recordIndex = student.records.findIndex(r => r.date === date);
-                if (recordIndex !== -1) {
-                    const record = student.records[recordIndex];
-                    updateRecord(currentClass, currentStudent, recordIndex, {
+                const record = student.records.find(r => r.date === date);
+                if (record) {
+                    await updateRecord(currentClass, currentStudent, record.id, {
                         date: record.date,
-                        breathSeconds: record.breathSeconds,
+                        breathSeconds: record.breath_seconds,
                         note: note
                     });
                     document.getElementById('lesson-note').value = '';
+
+                    // 학생 데이터 다시 불러오기
+                    currentStudentData = await findStudent(currentClass, currentStudent);
                     renderRecords();
                     alert('배움 한 줄이 저장되었습니다.');
                 } else {
@@ -440,17 +494,20 @@ function setupEventListeners() {
         closeModal('edit-modal');
     });
 
-    document.getElementById('edit-form').addEventListener('submit', (e) => {
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const index = parseInt(document.getElementById('edit-record-index').value);
+        const recordId = document.getElementById('edit-record-id').value;
         const date = document.getElementById('edit-date').value;
         const minutes = document.getElementById('edit-minutes').value;
         const seconds = document.getElementById('edit-seconds').value;
         const note = document.getElementById('edit-note').value.trim();
 
         const breathSeconds = breathTimeToSeconds(minutes, seconds);
-        updateRecord(currentClass, currentStudent, index, { date, breathSeconds, note });
+        await updateRecord(currentClass, currentStudent, recordId, { date, breathSeconds, note });
         closeModal('edit-modal');
+
+        // 학생 데이터 다시 불러오기
+        currentStudentData = await findStudent(currentClass, currentStudent);
         renderRecords();
     });
 
@@ -463,7 +520,7 @@ function setupEventListeners() {
         closeModal('delete-modal');
     });
 
-    document.getElementById('delete-form').addEventListener('submit', (e) => {
+    document.getElementById('delete-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const password = document.getElementById('delete-password').value;
 
@@ -473,13 +530,14 @@ function setupEventListeners() {
         }
 
         const type = document.getElementById('delete-type').value;
-        const index = parseInt(document.getElementById('delete-index').value);
+        const id = document.getElementById('delete-id').value;
 
         if (type === 'record') {
-            deleteRecord(currentClass, currentStudent, index);
+            await deleteRecord(currentClass, currentStudent, id);
+            currentStudentData = await findStudent(currentClass, currentStudent);
             renderRecords();
         } else if (type === 'student') {
-            deleteStudent(currentClass, currentStudent);
+            await deleteStudent(currentClass, currentStudent);
             showClassPage(currentClass);
         }
 
@@ -488,7 +546,7 @@ function setupEventListeners() {
 
     // 학생 삭제 버튼
     document.getElementById('delete-student-btn').addEventListener('click', () => {
-        openDeleteModal('student', 0);
+        openDeleteModal('student', currentStudent);
     });
 
     // 모달 외부 클릭 시 닫기
@@ -515,7 +573,6 @@ function setupEventListeners() {
 // ========================================
 
 function init() {
-    initData();
     setupEventListeners();
     showMainPage();
 }
